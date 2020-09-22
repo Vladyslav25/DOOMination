@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/InputComponent.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "BPlayer.generated.h"
 
@@ -31,4 +32,9 @@ public:
 private:
 	void HorizontalMove(float value);
 	void VerticalMove(float value);
+	void HorizontalRot(float value);
+	void VerticalRot(float value);
+
+	UPROPERTY()
+		UCameraComponent* camera;
 };

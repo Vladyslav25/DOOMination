@@ -6,17 +6,21 @@
 // Sets default values
 ABPlayer::ABPlayer()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	bUseControllerRotationYaw = false;
+
+	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	camera->AttachTo(RootComponent);
 }
 
 // Called when the game starts or when spawned
 void ABPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -33,19 +37,38 @@ void ABPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	InputComponent->BindAxis("Horizontal Movement", this, &ABPlayer::HorizontalMove);
 	InputComponent->BindAxis("Vertical Movement", this, &ABPlayer::VerticalMove);
+	InputComponent->BindAxis("Horizontal Rotation", this, &ABPlayer::HorizontalRot);
+	InputComponent->BindAxis("Vertical Rotation", this, &ABPlayer::VerticalRot);
 }
 
-void ABPlayer::HorizontalMove(float value) 
+void ABPlayer::HorizontalMove(float value)
 {
-	if (value) 
+	if (value)
 	{
 		AddMovementInput(GetActorRightVector(), value);
 	}
 }
 
-void ABPlayer::VerticalMove(float value) {
+void ABPlayer::VerticalMove(float value)
+{
 	if (value)
 	{
 		AddMovementInput(GetActorForwardVector(), value);
+	}
+}
+
+void ABPlayer::HorizontalRot(float value)
+{
+	if (value)
+	{
+		AddActorWorldRotation(FRotator(0, value, 0));
+	}
+}
+
+void ABPlayer::VerticalRot(float value)
+{
+	if (value)
+	{
+		AddActorLocalRotation(FRotator(value, 0, 0));
 	}
 }
