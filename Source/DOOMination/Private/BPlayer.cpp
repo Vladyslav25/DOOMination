@@ -14,6 +14,8 @@ ABPlayer::ABPlayer()
 
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	camera->AttachTo(RootComponent);
+
+	jumping = false;
 }
 
 // Called when the game starts or when spawned
@@ -28,6 +30,10 @@ void ABPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (jumping)
+	{
+		Jump();
+	}
 }
 
 // Called to bind functionality to input
@@ -39,6 +45,9 @@ void ABPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	InputComponent->BindAxis("Vertical Movement", this, &ABPlayer::VerticalMove);
 	InputComponent->BindAxis("Horizontal Rotation", this, &ABPlayer::HorizontalRot);
 	InputComponent->BindAxis("Vertical Rotation", this, &ABPlayer::VerticalRot);
+
+	InputComponent->BindAction("Jump", IE_Pressed, this, &ABPlayer::CheckJump);
+	InputComponent->BindAction("Jump", IE_Released, this, &ABPlayer::CheckJump);
 }
 
 void ABPlayer::HorizontalMove(float value)
@@ -70,5 +79,17 @@ void ABPlayer::VerticalRot(float value)
 	if (value)
 	{
 		AddActorLocalRotation(FRotator(value, 0, 0));
+	}
+}
+
+void ABPlayer::CheckJump()
+{
+	if (jumping)
+	{
+		jumping = false;
+	}
+	else
+	{
+		jumping = true;
 	}
 }

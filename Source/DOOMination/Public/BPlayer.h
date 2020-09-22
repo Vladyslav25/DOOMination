@@ -35,6 +35,11 @@ private:
 	void HorizontalRot(float value);
 	void VerticalRot(float value);
 
+	void CheckJump();
+
+	UPROPERTY()
+		bool jumping;
+
 	UPROPERTY()
 		UCameraComponent* camera;
 };
