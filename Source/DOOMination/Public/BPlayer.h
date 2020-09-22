@@ -4,9 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "Components/InputComponent.h"
+#include "Components/ArrowComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Character.h"
 #include "BPlayer.generated.h"
+
+#pragma region forward decleration
+class USceneComponent;
+class UCapsuleComponent;
+class UCameraComponent;
+class USpringArmComponent;
+class UArrowComponent;
+class UInstancedStaticMeshComponent;
+#pragma endregion
 
 
 UCLASS()
@@ -22,12 +34,26 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Player")
+		UCameraComponent* Camera = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Player")
+		USpringArmComponent* Arm = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Player")
+		USceneComponent* RootArm = nullptr;
+
+	//UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Player")
+	//	UArrowComponent* ForwardArrow = nullptr;
 
 private:
 	void HorizontalMove(float value);
@@ -37,9 +63,16 @@ private:
 
 	void CheckJump();
 
+	void Zoom(float value);
+	void Switch();
+
+	void Move(float LeftRight, float ForwardBack);
+
+
 	UPROPERTY()
 		bool jumping;
 
 	UPROPERTY()
-		UCameraComponent* camera;
+		bool firstPerson;
+
 };
