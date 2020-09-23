@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/World.h"
 
 #include "Components/InputComponent.h"
 #include "Components/ArrowComponent.h"
@@ -58,26 +57,35 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Camera")
 		USceneComponent* RootArmCenter = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
-		/// <summary>
-		/// rotation speed in angle per second
-		/// </summary>
-		float RotationSpeed = 180.0f;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Camera")
+		UArrowComponent* CameraForward = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
-		/// <summary>
-		/// movement speed in cm per second
-		/// </summary>
-		float MovementSpeed = 500.0f;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Aim")
+		float RotationSpeed;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aim")
+		float NormalRotationSpeed = 180.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aim")
+		float WeaponRotationSpeed = 80.0f;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Player")
-		/// <summary>
-		/// currend movement speed in cm per second
-		/// </summary>
+		float MovementSpeed;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
+		float NormalMovementSpeed = 500.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
+		float WeaponMovementSpeed = 300.0f;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Player")
 		FVector Movement = FVector();
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
-		float currZoomScale;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aim")
+		float WeaponZoomScale = 30.f;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aim")
+		float aimSpeed = 2.f;
 
 private:
 	void HorizontalMove(float value);
@@ -95,13 +103,18 @@ private:
 
 	void Move();
 	void Rotate(float LeftRight);
+	void RotateToCameraForward();
+	void ToggelRotateToCameraForward();
 
 
 	UPROPERTY()
-		bool jumping;
+		bool jumping = false;
 
 	UPROPERTY()
-		bool reachedTargetArmLenght;
+		bool isPressingAim = false;
+
+	UPROPERTY()
+		bool reachedTargetArmLenght = true;
 
 	UPROPERTY()
 		bool isZooming;
@@ -112,4 +125,18 @@ private:
 	UPROPERTY()
 		float currArmLenght;
 
+	UPROPERTY()
+		float zoomRatio = 0.f;
+
+	UPROPERTY()
+		float rotRatio = 1.f;
+
+	UPROPERTY()
+		float rotSpeed = 6.f;
+
+	UPROPERTY()
+		bool rotPlayer = false;
+
+	UPROPERTY()
+		FVector rotStartForward = FVector();
 };

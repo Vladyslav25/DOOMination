@@ -12,6 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h" 
+#include "Math/UnrealMathVectorCommon.h"
 #pragma endregion
 #include <Runtime\Engine\Classes\Kismet\KismetMathLibrary.h>
 
@@ -27,6 +28,9 @@ ABPlayer::ABPlayer()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	RootArm = CreateDefaultSubobject<USceneComponent>(TEXT("RootArm"));
 	RootArmCenter = CreateDefaultSubobject<USceneComponent>(TEXT("RootArmCenter"));
+	CameraForward = CreateDefaultSubobject<UArrowComponent>(TEXT("CameraForward"));
+	CameraForward->SetupAttachment(RootArmCenter);
+	CameraForward->bIsScreenSizeScaled = true;
 	RootArmCenter->SetupAttachment(ACharacter::GetCapsuleComponent());
 	RootArmCenter->SetRelativeLocation(FVector(0.f, 0.f, 85.f));
 
@@ -47,11 +51,9 @@ ABPlayer::ABPlayer()
 
 	Camera->AttachTo(Arm, USpringArmComponent::SocketName);
 
-	jumping = false;
 	currArmLenght = Arm->TargetArmLength;
-	currZoomScale = 30.f;
-	reachedTargetArmLenght = true;
-
+	RotationSpeed = NormalRotationSpeed;
+	MovementSpeed = NormalMovementSpeed;
 }
 
 // Called when the game starts or when spawned
@@ -66,15 +68,32 @@ void ABPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("reachedTargetArmLenght is: %s"), reachedTargetArmLenght));
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("isZooming is: %s"), isZooming));
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Purple, FString::Printf(TEXT("CameraForward is: %s"), *CameraForward->GetForwardVector().ToString()));
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Purple, FString::Printf(TEXT("rotPlayer is: %s"), rotPlayer ? TEXT("true") : TEXT("false")));
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Purple, FString::SanitizeFloat(rotRatio));
+
+	if (!isPressingAim && Movement.SizeSquared() > 0.1f || isPressingAim)
+	{
+		ToggelRotateToCameraForward();
+	}
+	else
+	{
+		rotPlayer = false;
+		rotRatio = 0;
+	}
+
+	if (!rotPlayer)
+	{
+		rotPlayer = false;
+		rotRatio = 0;
+	}
 
 	if (jumping)
 	{
 		Jump();
 	}
 
-	if (!reachedTargetArmLenght && isZooming)
+	if (!reachedTargetArmLenght)
 	{
 		if (isZoomingIn)
 		{
@@ -84,6 +103,12 @@ void ABPlayer::Tick(float DeltaTime)
 		{
 			ZoomOut();
 		}
+		Arm->TargetArmLength = FMath::Lerp(currArmLenght, WeaponZoomScale, zoomRatio);
+	}
+
+	if (rotPlayer)
+	{
+		RotateToCameraForward();
 	}
 
 	Move();
@@ -104,8 +129,8 @@ void ABPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	InputComponent->BindAction("Jump", IE_Pressed, this, &ABPlayer::CheckJump);
 	InputComponent->BindAction("Jump", IE_Released, this, &ABPlayer::CheckJump);
-	InputComponent->BindAction("Aim", IE_Pressed, this, &ABPlayer::ZoomIn);
-	InputComponent->BindAction("Aim", IE_Released, this, &ABPlayer::ZoomOut);
+	InputComponent->BindAction("Aim", IE_Pressed, this, &ABPlayer::ToggelZoomIn);
+	InputComponent->BindAction("Aim", IE_Released, this, &ABPlayer::ToggelZoomOut);
 }
 
 void ABPlayer::HorizontalMove(float value)
@@ -172,67 +197,97 @@ void ABPlayer::ToggelZoomIn()
 {
 	currArmLenght = Arm->TargetArmLength;
 	isZoomingIn = true;
-	isZooming = true;
 	reachedTargetArmLenght = false;
+	RotationSpeed = WeaponRotationSpeed;
+	MovementSpeed = WeaponMovementSpeed;
+	isPressingAim = true;
 }
 
 void ABPlayer::ToggelZoomOut()
 {
 	isZoomingIn = false;
-	isZooming = true;
 	reachedTargetArmLenght = false;
+	isPressingAim = false;
+	RotationSpeed = NormalRotationSpeed;
+	MovementSpeed = NormalMovementSpeed;
 }
-
-
 
 void ABPlayer::ZoomIn()
 {
-	if (Arm->TargetArmLength <= currZoomScale)
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Yellow, TEXT("----ZoomIN----"));
+
+	if (Arm->TargetArmLength <= WeaponZoomScale)
 	{
-		Arm->TargetArmLength = currZoomScale;
-		isZooming = false;
+		Arm->TargetArmLength = WeaponZoomScale;
 		reachedTargetArmLenght = true;
 	}
 	else
 	{
-		Arm->TargetArmLength -= GetWorld()->GetDeltaSeconds();
+		if (zoomRatio > 1)
+		{
+			zoomRatio = 1;
+		}
+		else
+		{
+			zoomRatio += GetWorld()->GetDeltaSeconds() * aimSpeed;
+		}
 	}
 }
 
 void ABPlayer::ZoomOut()
 {
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Yellow, TEXT("----ZoomOUT----"));
+
 	if (Arm->TargetArmLength >= currArmLenght)
 	{
-		Arm->TargetArmLength = currZoomScale;
-		isZooming = false;
+		Arm->TargetArmLength = currArmLenght;
 		reachedTargetArmLenght = true;
 	}
 	else
 	{
-		Arm->TargetArmLength += GetWorld()->GetDeltaSeconds();
+		if (zoomRatio < 0)
+		{
+			zoomRatio = 0;
+		}
+		else
+		{
+			zoomRatio -= GetWorld()->GetDeltaSeconds() * aimSpeed;
+		}
 	}
 }
 
 void ABPlayer::Move()
 {
-	//Normalize
 	Movement.Normalize();
-
-	//Add MovementSpeed
 	Movement = Movement * MovementSpeed;
 
-	AddMovementInput(Movement, 1);
-
-	if (Movement.SizeSquared() > 0.1f)
-	{
-		FRotator rotation = UKismetMathLibrary::MakeRotFromX(Movement);
-		rotation.Yaw -= 90.f;
-		ACharacter::GetMesh()->SetRelativeRotation(rotation);
-	}
+	AddMovementInput(Movement);
 }
 
 void ABPlayer::Rotate(float LeftRight)
 {
 	ACharacter::GetArrowComponent()->AddLocalRotation(FRotator(0.0f, LeftRight, 0.0f));
 	RootArmCenter->AddWorldRotation(FRotator(0.0f, LeftRight, 0.0f));
+}
+
+void ABPlayer::RotateToCameraForward()
+{
+	rotRatio += GetWorld()->GetDeltaSeconds() * rotSpeed;
+	if (rotRatio >= 1)
+	{
+		rotRatio = 1;
+	}
+	FRotator rotation = UKismetMathLibrary::MakeRotFromX(FMath::Lerp(rotStartForward, CameraForward->GetForwardVector(), rotRatio));
+	//rotation.Yaw -= 90.f;
+	ACharacter::GetMesh()->SetRelativeRotation(rotation);
+}
+
+void ABPlayer::ToggelRotateToCameraForward()
+{
+	if (!rotPlayer)
+	{
+		rotRatio = 0;
+		rotStartForward = ACharacter::GetMesh()->GetForwardVector();
+		rotPlayer = true;
+	}
 }
