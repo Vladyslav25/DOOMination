@@ -26,14 +26,11 @@ ABPlayer::ABPlayer()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 
-	//ForwardArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ForrwardArrow"));
-	//ForwardArrow->AttachTo(RootComponent);
-
 	Arm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
-	//Arm->AttachTo(RootArm);
-	Arm->SetupAttachment(RootArm);
+	Arm->SetupAttachment(ACharacter::GetMesh(), FName("head"));
 	Arm->TargetArmLength = 300.f;
-	Arm->SetRelativeRotation(FRotator(-15.f, 0.f, 0.f));
+	Arm->SetRelativeRotation(FRotator(-45.f, 0.f, 0.f));
+	//Arm->SetRelativeLocation(FVector(0.f, 50.f, 20.f));
 
 	Arm->bEnableCameraLag = true;
 	Arm->CameraLagSpeed = 10;
@@ -62,10 +59,15 @@ void ABPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("Forward is: %s"), *ACharacter::GetArrowComponent()->GetForwardVector().ToString()));
+
 	if (jumping)
 	{
 		Jump();
 	}
+
+	Move();
+	Movement = FVector(0, 0, 0);
 }
 
 // Called to bind functionality to input
@@ -89,9 +91,7 @@ void ABPlayer::HorizontalMove(float value)
 {
 	if (value)
 	{
-		AddMovementInput(ACharacter::GetArrowComponent()->GetRightVector(), value);
-		FRotator rot = UKismetMathLibrary::MakeRotFromX(ACharacter::GetArrowComponent()->GetRightVector());
-		SetActorRelativeRotation(rot);
+		Movement += ACharacter::GetArrowComponent()->GetRightVector() * value;
 	}
 }
 
@@ -99,7 +99,7 @@ void ABPlayer::VerticalMove(float value)
 {
 	if (value)
 	{
-		AddMovementInput(ACharacter::GetArrowComponent()->GetForwardVector(), value);
+		Movement += ACharacter::GetArrowComponent()->GetForwardVector() * value;
 	}
 }
 
@@ -107,9 +107,7 @@ void ABPlayer::HorizontalRot(float value)
 {
 	if (value)
 	{
-		ACharacter::GetArrowComponent()->AddWorldRotation(FRotator(0, value, 0));
-		Arm->AddWorldRotation(FRotator(0, value, 0));
-		//AddActorWorldRotation(FRotator(0, value, 0));
+		Rotate(value * RotationSpeed * GetWorld()->GetDeltaSeconds());
 	}
 }
 
@@ -179,24 +177,28 @@ void ABPlayer::Switch()
 	}
 }
 
-void ABPlayer::Move(float LeftRight, float ForwardBack)
+void ABPlayer::Move()
 {
-	Movement = MovementDirection->GetForwardVector() * ForwardBack;
-	Movement += MovementDirection->GetRightVector() * LeftRight;
-
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("Movement before is: %s"), *Movement.ToString()));
 	//Normalize
 	Movement.Normalize();
 
 	//Add MovementSpeed
 	Movement = Movement * MovementSpeed;
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("Movement is: %s"), *Movement.ToString()));
 
-	// try to add world offset
-	ACharacter::GetCapsuleComponent()->AddWorldOffset(Movement * GetWorld()->GetDeltaSeconds(), true);
+	AddMovementInput(Movement, 1);
 
 	if (Movement.SizeSquared() > 0.1f)
 	{
-
 		FRotator rotation = UKismetMathLibrary::MakeRotFromX(Movement);
+		rotation.Yaw -= 90.f;
 		ACharacter::GetMesh()->SetRelativeRotation(rotation);
 	}
+}
+
+void ABPlayer::Rotate(float LeftRight)
+{
+	ACharacter::GetArrowComponent()->AddLocalRotation(FRotator(0.0f, LeftRight, 0.0f));
+	Arm->AddWorldRotation(FRotator(0.0f, LeftRight, 0.0f));
 }

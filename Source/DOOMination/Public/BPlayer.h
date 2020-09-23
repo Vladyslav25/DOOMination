@@ -52,8 +52,24 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Player")
 		USceneComponent* RootArm = nullptr;
 
-	//UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Player")
-	//	UArrowComponent* ForwardArrow = nullptr;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
+		/// <summary>
+		/// rotation speed in angle per second
+		/// </summary>
+		float RotationSpeed = 180.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
+		/// <summary>
+		/// movement speed in cm per second
+		/// </summary>
+		float MovementSpeed = 500.0f;
+
+	//Vladi
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
+		/// <summary>
+		/// currend movement speed in cm per second
+		/// </summary>
+		FVector Movement = FVector();
 
 private:
 	void HorizontalMove(float value);
@@ -66,7 +82,8 @@ private:
 	void Zoom(float value);
 	void Switch();
 
-	void Move(float LeftRight, float ForwardBack);
+	void Move();
+	void Rotate(float LeftRight);
 
 
 	UPROPERTY()
