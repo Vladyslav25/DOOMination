@@ -54,6 +54,7 @@ ABPlayer::ABPlayer()
 	currArmLenght = Arm->TargetArmLength;
 	RotationSpeed = NormalRotationSpeed;
 	MovementSpeed = NormalMovementSpeed;
+	ACharacter::GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
 }
 
 // Called when the game starts or when spawned
@@ -67,10 +68,6 @@ void ABPlayer::BeginPlay()
 void ABPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Purple, FString::Printf(TEXT("CameraForward is: %s"), *CameraForward->GetForwardVector().ToString()));
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Purple, FString::Printf(TEXT("rotPlayer is: %s"), rotPlayer ? TEXT("true") : TEXT("false")));
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Purple, FString::SanitizeFloat(rotRatio));
 
 	if (!isPressingAim && Movement.SizeSquared() > 0.1f || isPressingAim)
 	{
@@ -214,8 +211,6 @@ void ABPlayer::ToggelZoomOut()
 
 void ABPlayer::ZoomIn()
 {
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Yellow, TEXT("----ZoomIN----"));
-
 	if (Arm->TargetArmLength <= WeaponZoomScale)
 	{
 		Arm->TargetArmLength = WeaponZoomScale;
@@ -236,8 +231,6 @@ void ABPlayer::ZoomIn()
 
 void ABPlayer::ZoomOut()
 {
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Yellow, TEXT("----ZoomOUT----"));
-
 	if (Arm->TargetArmLength >= currArmLenght)
 	{
 		Arm->TargetArmLength = currArmLenght;
@@ -259,8 +252,7 @@ void ABPlayer::ZoomOut()
 void ABPlayer::Move()
 {
 	Movement.Normalize();
-	Movement = Movement * MovementSpeed;
-
+	ACharacter::GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
 	AddMovementInput(Movement);
 }
 
@@ -278,7 +270,6 @@ void ABPlayer::RotateToCameraForward()
 		rotRatio = 1;
 	}
 	FRotator rotation = UKismetMathLibrary::MakeRotFromX(FMath::Lerp(rotStartForward, CameraForward->GetForwardVector(), rotRatio));
-	//rotation.Yaw -= 90.f;
 	ACharacter::GetMesh()->SetRelativeRotation(rotation);
 }
 

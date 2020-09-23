@@ -73,19 +73,19 @@ public:
 		float MovementSpeed;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
-		float NormalMovementSpeed = 500.0f;
+		float NormalMovementSpeed = 500.f;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
-		float WeaponMovementSpeed = 300.0f;
+		float WeaponMovementSpeed = 100.f;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Player")
 		FVector Movement = FVector();
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aim")
-		float WeaponZoomScale = 30.f;
+		float WeaponZoomScale = 20.f;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aim")
-		float aimSpeed = 2.f;
+		float aimSpeed = 10.f;
 
 private:
 	void HorizontalMove(float value);
