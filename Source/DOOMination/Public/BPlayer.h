@@ -3,12 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/World.h"
+
 #include "Components/InputComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Character.h"
+
 #include "BPlayer.generated.h"
 
 #pragma region forward decleration
@@ -43,14 +46,17 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Player")
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Camera")
 		UCameraComponent* Camera = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Player")
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Camera")
 		USpringArmComponent* Arm = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Player")
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Camera")
 		USceneComponent* RootArm = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Camera")
+		USceneComponent* RootArmCenter = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
 		/// <summary>
@@ -64,12 +70,14 @@ public:
 		/// </summary>
 		float MovementSpeed = 500.0f;
 
-	//Vladi
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Player")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Player")
 		/// <summary>
 		/// currend movement speed in cm per second
 		/// </summary>
 		FVector Movement = FVector();
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
+		float currZoomScale;
 
 private:
 	void HorizontalMove(float value);
@@ -80,7 +88,10 @@ private:
 	void CheckJump();
 
 	void Zoom(float value);
-	void Switch();
+	void ToggelZoomIn();
+	void ToggelZoomOut();
+	void ZoomIn();
+	void ZoomOut();
 
 	void Move();
 	void Rotate(float LeftRight);
@@ -90,6 +101,15 @@ private:
 		bool jumping;
 
 	UPROPERTY()
-		bool firstPerson;
+		bool reachedTargetArmLenght;
+
+	UPROPERTY()
+		bool isZooming;
+
+	UPROPERTY()
+		bool isZoomingIn;
+
+	UPROPERTY()
+		float currArmLenght;
 
 };

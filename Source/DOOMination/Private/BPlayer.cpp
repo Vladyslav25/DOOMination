@@ -25,12 +25,17 @@ ABPlayer::ABPlayer()
 	bUseControllerRotationYaw = false;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	RootArm = CreateDefaultSubobject<USceneComponent>(TEXT("RootArm"));
+	RootArmCenter = CreateDefaultSubobject<USceneComponent>(TEXT("RootArmCenter"));
+	RootArmCenter->SetupAttachment(ACharacter::GetCapsuleComponent());
+	RootArmCenter->SetRelativeLocation(FVector(0.f, 0.f, 85.f));
+
+	RootArm->SetupAttachment(RootArmCenter);
+	RootArm->SetRelativeLocationAndRotation(FVector(0.f, 50.f, 0.f), FRotator(-15.f, -3.f, 0.f));
 
 	Arm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
-	Arm->SetupAttachment(ACharacter::GetMesh(), FName("head"));
-	Arm->TargetArmLength = 300.f;
-	Arm->SetRelativeRotation(FRotator(-45.f, 0.f, 0.f));
-	//Arm->SetRelativeLocation(FVector(0.f, 50.f, 20.f));
+	Arm->SetupAttachment(RootArm);
+	Arm->TargetArmLength = 250.f;
 
 	Arm->bEnableCameraLag = true;
 	Arm->CameraLagSpeed = 10;
@@ -43,8 +48,10 @@ ABPlayer::ABPlayer()
 	Camera->AttachTo(Arm, USpringArmComponent::SocketName);
 
 	jumping = false;
+	currArmLenght = Arm->TargetArmLength;
+	currZoomScale = 30.f;
+	reachedTargetArmLenght = true;
 
-	firstPerson = false;
 }
 
 // Called when the game starts or when spawned
@@ -59,11 +66,24 @@ void ABPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("Forward is: %s"), *ACharacter::GetArrowComponent()->GetForwardVector().ToString()));
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("reachedTargetArmLenght is: %s"), reachedTargetArmLenght));
+	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("isZooming is: %s"), isZooming));
 
 	if (jumping)
 	{
 		Jump();
+	}
+
+	if (!reachedTargetArmLenght && isZooming)
+	{
+		if (isZoomingIn)
+		{
+			ZoomIn();
+		}
+		else
+		{
+			ZoomOut();
+		}
 	}
 
 	Move();
@@ -84,7 +104,8 @@ void ABPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	InputComponent->BindAction("Jump", IE_Pressed, this, &ABPlayer::CheckJump);
 	InputComponent->BindAction("Jump", IE_Released, this, &ABPlayer::CheckJump);
-	InputComponent->BindAction("ChangeCamera", IE_Pressed, this, &ABPlayer::Switch);
+	InputComponent->BindAction("Aim", IE_Pressed, this, &ABPlayer::ZoomIn);
+	InputComponent->BindAction("Aim", IE_Released, this, &ABPlayer::ZoomOut);
 }
 
 void ABPlayer::HorizontalMove(float value)
@@ -115,22 +136,10 @@ void ABPlayer::VerticalRot(float value)
 {
 	if (value)
 	{
-		float temp = 0;
-		if (firstPerson)
+		float temp = Arm->GetRelativeRotation().Pitch + value;
+		if (temp < 25 && temp > -65)
 		{
-			temp = Camera->GetRelativeRotation().Pitch + value;
-			if (temp < 65 && temp > -65)
-			{
-				Camera->AddLocalRotation(FRotator(value, 0, 0));
-			}
-		}
-		else
-		{
-			temp = Arm->GetRelativeRotation().Pitch + value;
-			if (temp < 25 && temp > -65)
-			{
-				Arm->AddLocalRotation(FRotator(value, 0, 0));
-			}
+			Arm->AddLocalRotation(FRotator(value, 0, 0));
 		}
 	}
 }
@@ -159,33 +168,58 @@ void ABPlayer::Zoom(float value)
 	}
 }
 
-void ABPlayer::Switch()
+void ABPlayer::ToggelZoomIn()
 {
-	if (firstPerson)
+	currArmLenght = Arm->TargetArmLength;
+	isZoomingIn = true;
+	isZooming = true;
+	reachedTargetArmLenght = false;
+}
+
+void ABPlayer::ToggelZoomOut()
+{
+	isZoomingIn = false;
+	isZooming = true;
+	reachedTargetArmLenght = false;
+}
+
+
+
+void ABPlayer::ZoomIn()
+{
+	if (Arm->TargetArmLength <= currZoomScale)
 	{
-		Arm->TargetArmLength = 300;
-		Arm->SetRelativeRotation(FRotator(-15, 0, 0));
-		Camera->SetRelativeRotation(FRotator(0, 0, 0));
-		Camera->AttachTo(Arm, USpringArmComponent::SocketName);
-		firstPerson = false;
+		Arm->TargetArmLength = currZoomScale;
+		isZooming = false;
+		reachedTargetArmLenght = true;
 	}
 	else
 	{
-		Camera->AttachTo(RootComponent);
-		Camera->SetRelativeLocation(FVector(0, 0, 100));
-		firstPerson = true;
+		Arm->TargetArmLength -= GetWorld()->GetDeltaSeconds();
+	}
+}
+
+void ABPlayer::ZoomOut()
+{
+	if (Arm->TargetArmLength >= currArmLenght)
+	{
+		Arm->TargetArmLength = currZoomScale;
+		isZooming = false;
+		reachedTargetArmLenght = true;
+	}
+	else
+	{
+		Arm->TargetArmLength += GetWorld()->GetDeltaSeconds();
 	}
 }
 
 void ABPlayer::Move()
 {
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("Movement before is: %s"), *Movement.ToString()));
 	//Normalize
 	Movement.Normalize();
 
 	//Add MovementSpeed
 	Movement = Movement * MovementSpeed;
-	GEngine->AddOnScreenDebugMessage(-1, GetWorld()->GetDeltaSeconds(), FColor::Red, FString::Printf(TEXT("Movement is: %s"), *Movement.ToString()));
 
 	AddMovementInput(Movement, 1);
 
@@ -200,5 +234,5 @@ void ABPlayer::Move()
 void ABPlayer::Rotate(float LeftRight)
 {
 	ACharacter::GetArrowComponent()->AddLocalRotation(FRotator(0.0f, LeftRight, 0.0f));
-	Arm->AddWorldRotation(FRotator(0.0f, LeftRight, 0.0f));
+	RootArmCenter->AddWorldRotation(FRotator(0.0f, LeftRight, 0.0f));
 }
