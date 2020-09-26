@@ -32,15 +32,7 @@ public:
 	// Sets default values for this character's properties
 	ABPlayer();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 public:
-
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -87,56 +79,57 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aim")
 		float aimSpeed = 10.f;
 
-private:
-	void HorizontalMove(float value);
-	void VerticalMove(float value);
-	void HorizontalRot(float value);
-	void VerticalRot(float value);
+	UFUNCTION(BlueprintCallable, DisplayName = "Rotate Horizontal")
+		void HorizontalRot(float value);
+	UFUNCTION(BlueprintCallable, DisplayName = "Rotate Vertical")
+		void VerticalRot(float value);
 
-	void CheckJump();
+	UFUNCTION(BlueprintCallable, DisplayName = "Check for Jump")
+		void CheckJump();
 
-	void Zoom(float value);
-	void ToggelZoomIn();
-	void ToggelZoomOut();
-	void ZoomIn();
-	void ZoomOut();
+	UFUNCTION(BlueprintCallable)
+		void Zoom(float value);
+	UFUNCTION(BlueprintCallable, DisplayName = "Toggel Zoom In")
+		void ToggelZoomIn();
+	UFUNCTION(BlueprintCallable, DisplayName = "Toggel Zoom Out")
+		void ToggelZoomOut();
 
-	void Move();
-	void Rotate(float LeftRight);
-	void RotateToCameraForward();
-	void ToggelRotateToCameraForward();
+	UFUNCTION(BlueprintCallable, DisplayName = "Zoom In")
+		void ZoomIn();
+	UFUNCTION(BlueprintCallable, DisplayName = "Zoom Out")
+		void ZoomOut();
 
+	UFUNCTION(BlueprintCallable, DisplayName = "Move Player")
+		void Move(float leftright, float forwardback);
+	UFUNCTION(BlueprintCallable, DisplayName = "Rotate Player")
+		void Rotate(float LeftRight);
+	UFUNCTION(BlueprintCallable, DisplayName = "Rotate Player to Camera")
+		void RotateToCameraForward();
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		bool jumping = false;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		bool isPressingAim = false;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		bool reachedTargetArmLenght = true;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		bool isZooming;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		bool isZoomingIn;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		float currArmLenght;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		float zoomRatio = 0.f;
 
-	UPROPERTY()
-		float rotRatio = 1.f;
-
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		float rotSpeed = 6.f;
 
-	UPROPERTY()
-		bool rotPlayer = false;
-
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		FVector rotStartForward = FVector();
 };

@@ -57,93 +57,22 @@ ABPlayer::ABPlayer()
 	ACharacter::GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
 }
 
-// Called when the game starts or when spawned
-void ABPlayer::BeginPlay()
-{
-	Super::BeginPlay();
-
-}
-
-// Called every frame
-void ABPlayer::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if (!isPressingAim && Movement.SizeSquared() > 0.1f || isPressingAim)
-	{
-		ToggelRotateToCameraForward();
-	}
-	else
-	{
-		rotPlayer = false;
-		rotRatio = 0;
-	}
-
-	if (!rotPlayer)
-	{
-		rotPlayer = false;
-		rotRatio = 0;
-	}
-
-	if (jumping)
-	{
-		Jump();
-	}
-
-	if (!reachedTargetArmLenght)
-	{
-		if (isZoomingIn)
-		{
-			ZoomIn();
-		}
-		else
-		{
-			ZoomOut();
-		}
-		Arm->TargetArmLength = FMath::Lerp(currArmLenght, WeaponZoomScale, zoomRatio);
-	}
-
-	if (rotPlayer)
-	{
-		RotateToCameraForward();
-	}
-
-	Move();
-	Movement = FVector(0, 0, 0);
-}
+//// Called when the game starts or when spawned
+//void ABPlayer::BeginPlay()
+//{
+//	Super::BeginPlay();
+//}
+//
+//// Called every frame
+//void ABPlayer::Tick(float DeltaTime)
+//{
+//	Super::Tick(DeltaTime);
+//}
 
 // Called to bind functionality to input
 void ABPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	InputComponent->BindAxis("Horizontal Movement", this, &ABPlayer::HorizontalMove);
-	InputComponent->BindAxis("Vertical Movement", this, &ABPlayer::VerticalMove);
-	InputComponent->BindAxis("Horizontal Rotation", this, &ABPlayer::HorizontalRot);
-	InputComponent->BindAxis("Vertical Rotation", this, &ABPlayer::VerticalRot);
-
-	InputComponent->BindAxis("Zoom", this, &ABPlayer::Zoom);
-
-	InputComponent->BindAction("Jump", IE_Pressed, this, &ABPlayer::CheckJump);
-	InputComponent->BindAction("Jump", IE_Released, this, &ABPlayer::CheckJump);
-	InputComponent->BindAction("Aim", IE_Pressed, this, &ABPlayer::ToggelZoomIn);
-	InputComponent->BindAction("Aim", IE_Released, this, &ABPlayer::ToggelZoomOut);
-}
-
-void ABPlayer::HorizontalMove(float value)
-{
-	if (value)
-	{
-		Movement += ACharacter::GetArrowComponent()->GetRightVector() * value;
-	}
-}
-
-void ABPlayer::VerticalMove(float value)
-{
-	if (value)
-	{
-		Movement += ACharacter::GetArrowComponent()->GetForwardVector() * value;
-	}
 }
 
 void ABPlayer::HorizontalRot(float value)
@@ -249,11 +178,20 @@ void ABPlayer::ZoomOut()
 	}
 }
 
-void ABPlayer::Move()
+void ABPlayer::Move(float leftright, float forwardback)
 {
+	Movement = ACharacter::GetArrowComponent()->GetRightVector() * leftright;
+	Movement += ACharacter::GetArrowComponent()->GetForwardVector() * forwardback;
 	Movement.Normalize();
 	ACharacter::GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
 	AddMovementInput(Movement);
+
+	if (Movement.SizeSquared() > 0.1f)
+	{
+		FRotator rotation = UKismetMathLibrary::MakeRotFromX(Movement);
+		rotation.Yaw -= 90;
+		ACharacter::GetMesh()->SetRelativeRotation(rotation);
+	}
 }
 
 void ABPlayer::Rotate(float LeftRight)
@@ -264,21 +202,7 @@ void ABPlayer::Rotate(float LeftRight)
 
 void ABPlayer::RotateToCameraForward()
 {
-	rotRatio += GetWorld()->GetDeltaSeconds() * rotSpeed;
-	if (rotRatio >= 1)
-	{
-		rotRatio = 1;
-	}
-	FRotator rotation = UKismetMathLibrary::MakeRotFromX(FMath::Lerp(rotStartForward, CameraForward->GetForwardVector(), rotRatio));
+	FRotator rotation = UKismetMathLibrary::MakeRotFromX(CameraForward->GetForwardVector());
+	rotation.Yaw -= 90;
 	ACharacter::GetMesh()->SetRelativeRotation(rotation);
-}
-
-void ABPlayer::ToggelRotateToCameraForward()
-{
-	if (!rotPlayer)
-	{
-		rotRatio = 0;
-		rotStartForward = ACharacter::GetMesh()->GetForwardVector();
-		rotPlayer = true;
-	}
 }
