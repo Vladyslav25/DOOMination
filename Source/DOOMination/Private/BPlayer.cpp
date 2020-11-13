@@ -88,7 +88,7 @@ void ABPlayer::VerticalRot(float value)
 	if (value)
 	{
 		float temp = Arm->GetRelativeRotation().Pitch + value;
-		if (temp < 25 && temp > -65)
+		if (temp < 45 && temp > -65)
 		{
 			Arm->AddLocalRotation(FRotator(value, 0, 0));
 		}
