@@ -28,9 +28,9 @@ ABPlayer::ABPlayer()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	RootArm = CreateDefaultSubobject<USceneComponent>(TEXT("RootArm"));
 	RootArmCenter = CreateDefaultSubobject<USceneComponent>(TEXT("RootArmCenter"));
-	CameraForward = CreateDefaultSubobject<UArrowComponent>(TEXT("CameraForward"));
-	CameraForward->SetupAttachment(RootArmCenter);
-	CameraForward->bIsScreenSizeScaled = true;
+	Playerforward = CreateDefaultSubobject<UArrowComponent>(TEXT("Player Forward"));
+
+	Playerforward->SetupAttachment(ACharacter::GetCapsuleComponent());
 	RootArmCenter->SetupAttachment(ACharacter::GetCapsuleComponent());
 	RootArmCenter->SetRelativeLocation(FVector(0.f, 0.f, 85.f));
 
@@ -49,7 +49,7 @@ ABPlayer::ABPlayer()
 	Arm->CameraRotationLagSpeed = 10.f;
 	Arm->CameraLagMaxTimeStep = 1.f;
 
-	Camera->AttachTo(Arm, USpringArmComponent::SocketName);
+	Camera->AttachToComponent(Arm,FAttachmentTransformRules::KeepRelativeTransform, USpringArmComponent::SocketName);
 
 	currArmLenght = Arm->TargetArmLength;
 	RotationSpeed = NormalRotationSpeed;
@@ -196,13 +196,5 @@ void ABPlayer::Move(float leftright, float forwardback)
 
 void ABPlayer::Rotate(float LeftRight)
 {
-	ACharacter::GetArrowComponent()->AddLocalRotation(FRotator(0.0f, LeftRight, 0.0f));
-	RootArmCenter->AddWorldRotation(FRotator(0.0f, LeftRight, 0.0f));
-}
-
-void ABPlayer::RotateToCameraForward()
-{
-	FRotator rotation = UKismetMathLibrary::MakeRotFromX(CameraForward->GetForwardVector());
-	rotation.Yaw -= 90;
-	ACharacter::GetMesh()->SetRelativeRotation(rotation);
+	ACharacter::GetCapsuleComponent()->AddWorldRotation(FRotator(0.0f, LeftRight, 0.0f));
 }
