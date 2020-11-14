@@ -180,8 +180,8 @@ void ABPlayer::ZoomOut()
 
 void ABPlayer::Move(float leftright, float forwardback)
 {
-	Movement = ACharacter::GetArrowComponent()->GetRightVector() * leftright;
-	Movement += ACharacter::GetArrowComponent()->GetForwardVector() * forwardback;
+	Movement = Playerforward->GetRightVector() * leftright;
+	Movement += Playerforward->GetForwardVector() * forwardback;
 	Movement.Normalize();
 	ACharacter::GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
 	AddMovementInput(Movement);
