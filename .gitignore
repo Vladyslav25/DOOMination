@@ -72,3 +72,15 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# FMOD
+/Assets/FMODStudioCache.asset
+/Assets/FMODStudioCache.asset.meta
+fmod.log
+fmod_editor.log
+
+# FMOD studio (In folder FMOD)
+/FMOD/**.user
+/FMOD/**.unsaved
+/FMOD/**.cache
+/FMOD/**.restore
