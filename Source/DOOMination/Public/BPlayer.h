@@ -49,9 +49,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Camera")
 		USceneComponent* RootArmCenter = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Camera")
-		UArrowComponent* CameraForward = nullptr;
-
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Aim")
 		float RotationSpeed;
 
@@ -60,6 +57,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aim")
 		float WeaponRotationSpeed = 80.0f;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Player")
+		UArrowComponent* Playerforward = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Player")
 		float MovementSpeed;
@@ -103,8 +103,6 @@ public:
 		void Move(float leftright, float forwardback);
 	UFUNCTION(BlueprintCallable, DisplayName = "Rotate Player")
 		void Rotate(float LeftRight);
-	UFUNCTION(BlueprintCallable, DisplayName = "Rotate Player to Camera")
-		void RotateToCameraForward();
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 		bool jumping = false;
