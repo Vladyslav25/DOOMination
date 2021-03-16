@@ -2,8 +2,8 @@
 
 
 #include "BDataCollector.h"
-#include <fstream> // ONLY USE TO SAVE XML TO FILE
-#include <string> // ONLY USE TO SAVE XML TO FILE
+#include <string>
+//#include <fstream> // ONLY USE TO SAVE XML TO FILE
 
 // Sets default values
 ABDataCollector::ABDataCollector()
@@ -184,13 +184,12 @@ void ABDataCollector::SaveXML(
 
 #pragma region Save to File (temporary)
 	//TEMPORARY: Save to File
-	const char* temp = "C:\\Users\\Tobias\\Desktop\\Testordner\\Testfile.xml";
-	
-	std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
-	*ofs << *s;
-	ofs->close();
-	delete ofs;
-	delete temp;
+	//const char* temp = "{FilePath}";
+	//
+	//std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
+	//*ofs << *s;
+	//ofs->close();
+	//delete ofs;
 #pragma endregion
 
 	delete s;
