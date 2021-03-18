@@ -3,8 +3,6 @@
 
 #include "BDataCollector.h"
 #include <string>
-#include <ctime>
-
 //#include <fstream> // ONLY USE TO SAVE XML TO FILE
 
 // Sets default values
@@ -65,7 +63,7 @@ void ABDataCollector::SaveXML(
 	// date time
 	* s += "\t\t<DateOfRound>";
 	FDateTime timeNow;
-	timeNow.UtcNow();
+	timeNow = FDateTime::UtcNow();
 	// year
 	*s += std::to_string(timeNow.GetYear()) + "-";
 	// month
@@ -170,7 +168,7 @@ void ABDataCollector::SaveXML(
 	//*s += FString::FromInt(totalAmountTurretsPlaced);
 	*s += std::to_string(totalAmountTurretsPlaced);
 	*s += "</AmountOfTurretsPlaced>\n";
-
+	
 	// Total amount of how many turret upgrades were purchased
 	*s += "\t\t<AmountOfTurretUpgrades>";
 	//*s += FString::FromInt(totalAmountTurretsUpgraded);
@@ -228,7 +226,7 @@ void ABDataCollector::SaveXML(
 
 #pragma region Save to File (temporary)
 	//TEMPORARY: Save to File
-	//const char* temp = "{FilePath}";
+	//const char* temp = "E:\\Tobias\\Dokumente\\ToTest\\Game.xml";
 	//
 	//std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
 	//*ofs << *s;
