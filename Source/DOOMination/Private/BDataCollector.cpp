@@ -2,8 +2,7 @@
 
 
 #include "BDataCollector.h"
-#include <string>
-//#include <fstream> // ONLY USE TO SAVE XML TO FILE
+#include <fstream> // ONLY USE TO SAVE XML TO FILE
 
 // Sets default values
 ABDataCollector::ABDataCollector()
@@ -53,7 +52,7 @@ void ABDataCollector::SaveXML(
 	// XML Header
 	*s = "<?xml version=\"1.0\"?>\n";
 	*s += "<ArrayOfRound>\n";
-	*s += "\t<Round>";
+	*s += "\t<Round>\n";
 #pragma region content
 	//int to FString	-->	FString::FromInt(int)
 	//float to FString	-->	FString::SanitizeFloat(float) [?]
@@ -67,27 +66,28 @@ void ABDataCollector::SaveXML(
 	// year
 	*s += std::to_string(timeNow.GetYear()) + "-";
 	// month
-	*s += std::to_string(timeNow.GetMonth()) + "-";
-	// day
-	*s += std::to_string(timeNow.GetDay());
-	
-	// hour
-	*s += "T" + std::to_string(timeNow.GetHour()) + ":";
-	// minute
-	*s += std::to_string(timeNow.GetMinute()) + ":";
-	// second
-	*s += std::to_string(timeNow.GetSecond()) + ".";
-	// minisecond
-	*s += std::to_string(timeNow.GetMillisecond());
+	*s += AddZero(timeNow.GetMonth(), 2) + "-";
 
-	//GTM (HARDCODED)
-	*s += "+01:00";
-	*s += "</DateOfRound>";
+	// day
+	*s += AddZero(timeNow.GetDay(), 2);
+
+	// hour
+	*s += "T" + AddZero(timeNow.GetHour(), 2) + ":";
+	// minute
+	*s += AddZero(timeNow.GetMinute(), 2) + ":";
+	// second
+	*s += AddZero(timeNow.GetSecond(), 2);
+	//// minisecond
+	//*s += "." + std::to_string(timeNow.GetMillisecond());
+	//
+	////GTM (HARDCODED)
+	//*s += "+01:00";
+	*s += "</DateOfRound>\n";
 #pragma endregion
-	
+
 
 	// wave amount
-	*s += "\t\t<WaveAmount>";
+	* s += "\t\t<WaveAmount>";
 	//*s += FString::FromInt(waveAmount);
 	*s += std::to_string(waveAmount);
 	*s += "</WaveAmount>\n";
@@ -168,7 +168,7 @@ void ABDataCollector::SaveXML(
 	//*s += FString::FromInt(totalAmountTurretsPlaced);
 	*s += std::to_string(totalAmountTurretsPlaced);
 	*s += "</AmountOfTurretsPlaced>\n";
-	
+
 	// Total amount of how many turret upgrades were purchased
 	*s += "\t\t<AmountOfTurretUpgrades>";
 	//*s += FString::FromInt(totalAmountTurretsUpgraded);
@@ -222,20 +222,51 @@ void ABDataCollector::SaveXML(
 
 	// End of File
 	* s += "\t</Round>";
-	* s += "</ArrayOfRound>";
+	*s += "</ArrayOfRound>";
 
 #pragma region Save to File (temporary)
 	//TEMPORARY: Save to File
-	//const char* temp = "E:\\Tobias\\Dokumente\\ToTest\\Game.xml";
-	//
-	//std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
-	//*ofs << *s;
-	//ofs->close();
-	//delete ofs;
+	const char* temp = "E:\\Tobias\\Dokumente\\ToTest\\Game.xml";
+
+	std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
+	*ofs << *s;
+	ofs->close();
+	delete ofs;
 #pragma endregion
 
 	delete s;
 }
 
+std::string ABDataCollector::AddZero(int number, int maxLenght)
+{
+	std::string toReturn = "";
+	std::string temp = std::to_string(number);
+	int length = temp.length();
+	while (length < maxLenght)
+	{
+		toReturn += "0";
+		length++;
+	}
 
+	toReturn += std::to_string(number);
 
+	return toReturn;
+
+}
+
+std::string ABDataCollector::AddZero(float number, int maxLenght)
+{
+	std::string toReturn = "";
+	std::string temp = std::to_string(number);
+	int length = temp.length();
+	while (length < maxLenght)
+	{
+		toReturn += "0";
+		length++;
+	}
+
+	toReturn += std::to_string(number);
+
+	return toReturn;
+
+}
