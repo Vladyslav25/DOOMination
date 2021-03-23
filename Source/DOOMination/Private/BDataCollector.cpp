@@ -54,6 +54,7 @@ void ABDataCollector::SaveXML(
 	*s = "<?xml version=\"1.0\"?>\n";
 	*s += "<ArrayOfRound>\n";
 	*s += "\t<Round>\n";
+
 #pragma region content
 	//int to FString	-->	FString::FromInt(int)
 	//float to FString	-->	FString::SanitizeFloat(float) [?]
@@ -85,6 +86,8 @@ void ABDataCollector::SaveXML(
 	//*s += "+01:00";
 	*s += "</DateOfRound>\n";
 #pragma endregion
+
+#pragma region Save stats
 
 
 	// wave amount
@@ -224,17 +227,40 @@ void ABDataCollector::SaveXML(
 	// End of File
 	* s += "\t</Round>";
 	*s += "</ArrayOfRound>";
+#pragma endregion
 
-#pragma region Save to File (temporary)
-	//TEMPORARY: Save to File
-	std::string tempPath = GetExePath() + "Game.xml";
+#pragma region Save to File
+
+#pragma region Filename Setup
+	// set up file name
+	std::string* filename = new std::string();
+	// signature
+	*filename += "DOOMination_";
+	// year
+	*filename += std::to_string(timeNow.GetYear()) + ".";
+	// month
+	*filename += AddZero(timeNow.GetMonth(), 2) + ".";
+	// day
+	*filename += AddZero(timeNow.GetDay(), 2);
+	// hour
+	*filename += "#" + AddZero(timeNow.GetHour(), 2) + "-";
+	// minute
+	*filename += AddZero(timeNow.GetMinute(), 2) + "-";
+	// second
+	*filename += AddZero(timeNow.GetSecond(), 2);
+#pragma endregion
+
+	std::string tempPath = GetSavePath() + *filename + ".xml";
 	const char* temp = tempPath.c_str();
 	
 	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Orange, temp);
+
+	// open Filestream and save content to file
 	std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
 	*ofs << *s;
 	ofs->close();
 	delete ofs;
+	delete filename;
 
 #pragma endregion
 
@@ -274,12 +300,17 @@ std::string ABDataCollector::AddZero(float number, int maxLenght)
 
 }
 
-std::string ABDataCollector::GetExePath()
+std::string ABDataCollector::GetSavePath()
 {
 	
-	FString path = FPaths::ConvertRelativePathToFull(FPaths::GameSourceDir());
+	FString path = FPaths::ConvertRelativePathToFull(FPlatformProcess::UserDir());
+	path += "DOOMination/";
+
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	if (!PlatformFile.DirectoryExists(*path)) {
+		PlatformFile.CreateDirectory(*path);
+	}
 
 	std::string path2 = std::string(TCHAR_TO_UTF8(*path));
 	return path2;
-	//return "";
 }
