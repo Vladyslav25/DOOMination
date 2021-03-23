@@ -31,4 +31,6 @@ public:
 private:
 	std::string AddZero(int number, int maxLenght);
 	std::string AddZero(float number, int maxLenght);
+
+	std::string GetExePath();
 };

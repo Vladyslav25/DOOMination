@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
+
 #include "BDataCollector.h"
-//#include <fstream> // ONLY USE TO SAVE XML TO FILE
+#include <fstream> // ONLY USE TO SAVE XML TO FILE
 
 // Sets default values
 ABDataCollector::ABDataCollector()
@@ -226,12 +227,15 @@ void ABDataCollector::SaveXML(
 
 #pragma region Save to File (temporary)
 	//TEMPORARY: Save to File
-	//const char* temp = "E:\\Tobias\\Dokumente\\ToTest\\Game.xml";
-	//
-	//std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
-	//*ofs << *s;
-	//ofs->close();
-	//delete ofs;
+	std::string tempPath = GetExePath() + "Game.xml";
+	const char* temp = tempPath.c_str();
+	
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Orange, temp);
+	std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
+	*ofs << *s;
+	ofs->close();
+	delete ofs;
+
 #pragma endregion
 
 	delete s;
@@ -249,7 +253,6 @@ std::string ABDataCollector::AddZero(int number, int maxLenght)
 	}
 
 	toReturn += std::to_string(number);
-
 	return toReturn;
 
 }
@@ -269,4 +272,14 @@ std::string ABDataCollector::AddZero(float number, int maxLenght)
 
 	return toReturn;
 
+}
+
+std::string ABDataCollector::GetExePath()
+{
+	
+	FString path = FPaths::ConvertRelativePathToFull(FPaths::GameSourceDir());
+
+	std::string path2 = std::string(TCHAR_TO_UTF8(*path));
+	return path2;
+	//return "";
 }
