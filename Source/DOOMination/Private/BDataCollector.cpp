@@ -232,6 +232,13 @@ void ABDataCollector::SaveXML(
 #pragma region Save to File
 
 #pragma region Filename Setup
+	/////////////////////////////////////////////
+	/// IMPORTANT BEFORE CHANGING FILENAME!!! ///
+	/////////////////////////////////////////////
+	/// In Case you want to exit the filename, DO NOT USE ":"
+	/// egs: "DOOMination_2021.03.23#12-30-22.xml" will save.
+	///		 "DOOMination_2021.03.23#12:30:22.xml" won't save.
+	
 	// set up file name
 	std::string* filename = new std::string();
 	// signature
@@ -250,7 +257,7 @@ void ABDataCollector::SaveXML(
 	*filename += AddZero(timeNow.GetSecond(), 2);
 #pragma endregion
 
-	std::string tempPath = GetSavePath() + *filename + ".xml";
+	std::string tempPath = GetSaveDirectory() + *filename + ".xml";
 	const char* temp = tempPath.c_str();
 	
 	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Orange, temp);
@@ -300,17 +307,19 @@ std::string ABDataCollector::AddZero(float number, int maxLenght)
 
 }
 
-std::string ABDataCollector::GetSavePath()
+std::string ABDataCollector::GetSaveDirectory()
 {
-	
+	// get user document path and add DOOMination directory
 	FString path = FPaths::ConvertRelativePathToFull(FPlatformProcess::UserDir());
 	path += "DOOMination/";
 
+	// check if folder exists. If not, create it
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 	if (!PlatformFile.DirectoryExists(*path)) {
 		PlatformFile.CreateDirectory(*path);
 	}
 
+	// because the path is a FString and ofstream works with std::string, we need to convert it.
 	std::string path2 = std::string(TCHAR_TO_UTF8(*path));
 	return path2;
 }
