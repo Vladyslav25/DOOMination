@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "BDataCollector.generated.h"
@@ -24,5 +26,31 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "XML")
+		/// <summary>
+		/// Save collected Data to a xml file located in "My Documents/DOOMination/[current Date/Time].xml"
+		/// </summary>
 		void SaveXML(int waveAmount, float totalAmountDmgByPlayer, float totalAmountDmgByTurret, int totalTowerShots, int totalPlayerShots, int totalPlayerShotsHit, int totalPlayerShotsCrit, int totalArgentCollected, int totalArgentSpend, int totalArgentSpendForTurrets, int totalAmountWeaponUpgrade, int totalAmountTurretsPlaced, int totalAmountTurretsUpgraded, float totalPlayTimePistol, float totalPlayTimeMinigun, float totalPlayTimeHarpune, float totalPlayTimeSniper, float totalPlayTimeLMG, float totalPlayTimeShotgun, float totalDistanceWalked);
+
+private:
+	/// <summary>
+	/// Add Zero to Number if number is less that maxLenght
+	/// </summary>
+	/// <param name="number">number to check</param>
+	/// <param name="maxLenght">max amount of characters</param>
+	/// <returns>new number as string</returns>
+	std::string AddZero(int number, int maxLenght);
+
+	/// <summary>
+	/// Add Zero to Number if number is less that maxLenght
+	/// </summary>
+	/// <param name="number">number to check</param>
+	/// <param name="maxLenght">max amount of characters</param>
+	/// <returns>new number as string</returns>
+	std::string AddZero(float number, int maxLenght);
+
+	/// <summary>
+	/// Get save Directory, not FILE
+	/// </summary>
+	/// <returns></returns>
+	std::string GetSaveDirectory();
 };

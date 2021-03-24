@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
+
 #include "BDataCollector.h"
-#include <string>
-//#include <fstream> // ONLY USE TO SAVE XML TO FILE
+#include <fstream> // ONLY USE TO SAVE XML TO FILE
 
 // Sets default values
 ABDataCollector::ABDataCollector()
@@ -53,7 +53,8 @@ void ABDataCollector::SaveXML(
 	// XML Header
 	*s = "<?xml version=\"1.0\"?>\n";
 	*s += "<ArrayOfRound>\n";
-	*s += "\t<Round>";
+	*s += "\t<Round>\n";
+
 #pragma region content
 	//int to FString	-->	FString::FromInt(int)
 	//float to FString	-->	FString::SanitizeFloat(float) [?]
@@ -67,27 +68,30 @@ void ABDataCollector::SaveXML(
 	// year
 	*s += std::to_string(timeNow.GetYear()) + "-";
 	// month
-	*s += std::to_string(timeNow.GetMonth()) + "-";
-	// day
-	*s += std::to_string(timeNow.GetDay());
-	
-	// hour
-	*s += "T" + std::to_string(timeNow.GetHour()) + ":";
-	// minute
-	*s += std::to_string(timeNow.GetMinute()) + ":";
-	// second
-	*s += std::to_string(timeNow.GetSecond()) + ".";
-	// minisecond
-	*s += std::to_string(timeNow.GetMillisecond());
+	*s += AddZero(timeNow.GetMonth(), 2) + "-";
 
-	//GTM (HARDCODED)
-	*s += "+01:00";
-	*s += "</DateOfRound>";
+	// day
+	*s += AddZero(timeNow.GetDay(), 2);
+
+	// hour
+	*s += "T" + AddZero(timeNow.GetHour(), 2) + ":";
+	// minute
+	*s += AddZero(timeNow.GetMinute(), 2) + ":";
+	// second
+	*s += AddZero(timeNow.GetSecond(), 2);
+	//// minisecond
+	//*s += "." + std::to_string(timeNow.GetMillisecond());
+	//
+	////GTM (HARDCODED)
+	//*s += "+01:00";
+	*s += "</DateOfRound>\n";
 #pragma endregion
-	
+
+#pragma region Save stats
+
 
 	// wave amount
-	*s += "\t\t<WaveAmount>";
+	* s += "\t\t<WaveAmount>";
 	//*s += FString::FromInt(waveAmount);
 	*s += std::to_string(waveAmount);
 	*s += "</WaveAmount>\n";
@@ -168,7 +172,7 @@ void ABDataCollector::SaveXML(
 	//*s += FString::FromInt(totalAmountTurretsPlaced);
 	*s += std::to_string(totalAmountTurretsPlaced);
 	*s += "</AmountOfTurretsPlaced>\n";
-	
+
 	// Total amount of how many turret upgrades were purchased
 	*s += "\t\t<AmountOfTurretUpgrades>";
 	//*s += FString::FromInt(totalAmountTurretsUpgraded);
@@ -222,20 +226,100 @@ void ABDataCollector::SaveXML(
 
 	// End of File
 	* s += "\t</Round>";
-	* s += "</ArrayOfRound>";
+	*s += "</ArrayOfRound>";
+#pragma endregion
 
-#pragma region Save to File (temporary)
-	//TEMPORARY: Save to File
-	//const char* temp = "E:\\Tobias\\Dokumente\\ToTest\\Game.xml";
-	//
-	//std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
-	//*ofs << *s;
-	//ofs->close();
-	//delete ofs;
+#pragma region Save to File
+
+#pragma region Filename Setup
+	/////////////////////////////////////////////
+	/// IMPORTANT BEFORE CHANGING FILENAME!!! ///
+	/////////////////////////////////////////////
+	/// In Case you want to exit the filename, DO NOT USE ":"
+	/// egs: "DOOMination_2021.03.23#12-30-22.xml" will save.
+	///		 "DOOMination_2021.03.23#12:30:22.xml" won't save.
+	
+	// set up file name
+	std::string* filename = new std::string();
+	// signature
+	*filename += "DOOMination_";
+	// year
+	*filename += std::to_string(timeNow.GetYear()) + ".";
+	// month
+	*filename += AddZero(timeNow.GetMonth(), 2) + ".";
+	// day
+	*filename += AddZero(timeNow.GetDay(), 2);
+	// hour
+	*filename += "#" + AddZero(timeNow.GetHour(), 2) + "-";
+	// minute
+	*filename += AddZero(timeNow.GetMinute(), 2) + "-";
+	// second
+	*filename += AddZero(timeNow.GetSecond(), 2);
+#pragma endregion
+
+	std::string tempPath = GetSaveDirectory() + *filename + ".xml";
+	const char* temp = tempPath.c_str();
+	
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Orange, temp);
+
+	// open Filestream and save content to file
+	std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
+	*ofs << *s;
+	ofs->close();
+	delete ofs;
+	delete filename;
+
 #pragma endregion
 
 	delete s;
 }
 
+std::string ABDataCollector::AddZero(int number, int maxLenght)
+{
+	std::string toReturn = "";
+	std::string temp = std::to_string(number);
+	int length = temp.length();
+	while (length < maxLenght)
+	{
+		toReturn += "0";
+		length++;
+	}
 
+	toReturn += std::to_string(number);
+	return toReturn;
 
+}
+
+std::string ABDataCollector::AddZero(float number, int maxLenght)
+{
+	std::string toReturn = "";
+	std::string temp = std::to_string(number);
+	int length = temp.length();
+	while (length < maxLenght)
+	{
+		toReturn += "0";
+		length++;
+	}
+
+	toReturn += std::to_string(number);
+
+	return toReturn;
+
+}
+
+std::string ABDataCollector::GetSaveDirectory()
+{
+	// get user document path and add DOOMination directory
+	FString path = FPaths::ConvertRelativePathToFull(FPlatformProcess::UserDir());
+	path += "DOOMination/";
+
+	// check if folder exists. If not, create it
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	if (!PlatformFile.DirectoryExists(*path)) {
+		PlatformFile.CreateDirectory(*path);
+	}
+
+	// because the path is a FString and ofstream works with std::string, we need to convert it.
+	std::string path2 = std::string(TCHAR_TO_UTF8(*path));
+	return path2;
+}
