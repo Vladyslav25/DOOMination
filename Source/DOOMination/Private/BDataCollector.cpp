@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
+
 #include "BDataCollector.h"
-#include <string>
-//#include <fstream> // ONLY USE TO SAVE XML TO FILE
+#include <fstream> // ONLY USE TO SAVE XML TO FILE
 
 // Sets default values
 ABDataCollector::ABDataCollector()
@@ -31,6 +31,7 @@ void ABDataCollector::SaveXML(
 	float totalAmountDmgByPlayer,
 	float totalAmountDmgByTurret,
 	int totalTowerShots,
+	int totalPlayerShots,
 	int totalPlayerShotsHit,
 	int totalPlayerShotsCrit,
 	int totalArgentCollected,
@@ -51,149 +52,274 @@ void ABDataCollector::SaveXML(
 
 	// XML Header
 	*s = "<?xml version=\"1.0\"?>\n";
-	*s += "<XmlFiles>\n";
+	*s += "<ArrayOfRound>\n";
+	*s += "\t<Round>\n";
 
 #pragma region content
 	//int to FString	-->	FString::FromInt(int)
 	//float to FString	-->	FString::SanitizeFloat(float) [?]
 
 	// content
+#pragma region Save Time
+	// date time
+	* s += "\t\t<DateOfRound>";
+	FDateTime timeNow;
+	timeNow = FDateTime::UtcNow();
+	// year
+	*s += std::to_string(timeNow.GetYear()) + "-";
+	// month
+	*s += AddZero(timeNow.GetMonth(), 2) + "-";
+
+	// day
+	*s += AddZero(timeNow.GetDay(), 2);
+
+	// hour
+	*s += "T" + AddZero(timeNow.GetHour(), 2) + ":";
+	// minute
+	*s += AddZero(timeNow.GetMinute(), 2) + ":";
+	// second
+	*s += AddZero(timeNow.GetSecond(), 2);
+	//// minisecond
+	//*s += "." + std::to_string(timeNow.GetMillisecond());
+	//
+	////GTM (HARDCODED)
+	//*s += "+01:00";
+	*s += "</DateOfRound>\n";
+#pragma endregion
+
+#pragma region Save stats
+
+
 	// wave amount
-	*s += "\t<WaveAmount>";
+	* s += "\t\t<WaveAmount>";
 	//*s += FString::FromInt(waveAmount);
 	*s += std::to_string(waveAmount);
 	*s += "</WaveAmount>\n";
 
 	// --- Damage --- //
+	// Total amount of damage
+	*s += "\t\t<CompleteAmountOfDamage>";
+	//*s += FString::SanitizeFloat(totalAmountDmgByPlayer);
+	float totalDmg = totalAmountDmgByPlayer + totalAmountDmgByTurret;
+	*s += std::to_string(totalDmg);
+	*s += "</CompleteAmountOfDamage>\n";
+
 	// Total amount of damage by player
-	*s += "\t<TotalAmountDmgByPlayer>";
+	*s += "\t\t<CompleteAmountOfDamageByPlayer>";
 	//*s += FString::SanitizeFloat(totalAmountDmgByPlayer);
 	*s += std::to_string(totalAmountDmgByPlayer);
-	*s += "</TotalAmountDmgByPlayer>\n";
+	*s += "</CompleteAmountOfDamageByPlayer>\n";
 
 	// Total amount of damage by turret
-	*s += "\t<TotalAmountDmgByTower>";
+	*s += "\t\t<CompleteAmountOfDamageByTurret>";
 	//*s += FString::SanitizeFloat(totalAmountDmgByTurret);
 	*s += std::to_string(totalAmountDmgByTurret);
-	*s += "</TotalAmountDmgByTower>\n";
+	*s += "</CompleteAmountOfDamageByTurret>\n";
 
 	// --- Shots --- //
-	// Total amount of shots by Tower
-	*s += "\t<TotalTowerShots>";
+	// Total amount of shots by Tower (NOT IMPLEMENTED IN WPF YET)
+	*s += "\t\t<TotalTowerShots>";
 	//*s += FString::FromInt(totalTowerShots);
 	*s += std::to_string(totalTowerShots);
 	*s += "</TotalTowerShots>\n";
 
+	// Total amount of shots by Player
+	*s += "\t\t<ShotsFired>";
+	//*s += FString::FromInt(totalTowerShots);
+	*s += std::to_string(totalPlayerShots);
+	*s += "</ShotsFired>\n";
+
 	// Total amount of shots hit by Player
-	*s += "\t<TotalPlayerShotsHit>";
+	*s += "\t\t<ShotsHit>";
 	//*s += FString::FromInt(totalPlayerShotsHit);
 	*s += std::to_string(totalPlayerShotsHit);
-	*s += "</TotalPlayerShotsHit>\n";
+	*s += "</ShotsHit>\n";
 
 	// Total amount of shots hit critical by Player
-	*s += "\t<TotalPlayerShotsHitCrit>";
+	*s += "\t\t<ShotsCrit>";
 	//*s += FString::FromInt(totalPlayerShotsCrit);
 	*s += std::to_string(totalPlayerShotsCrit);
-	*s += "</TotalPlayerShotsHitCrit>\n";
+	*s += "</ShotsCrit>\n";
 
 	// --- Argent --- //
 	// Total amount of collected argent
-	*s += "\t<TotalArgentCollected>";
+	*s += "\t\t<CollectedArgent>";
 	//*s += FString::FromInt(totalArgentCollected);
 	*s += std::to_string(totalArgentCollected);
-	*s += "</TotalArgentCollected>\n";
+	*s += "</CollectedArgent>\n";
 
 	// Total amount of argent spent
-	*s += "\t<TotalArgentSpent>";
+	*s += "\t\t<SpendedAmountOfArgent>";
 	//*s += FString::FromInt(totalArgentSpent);
 	*s += std::to_string(totalArgentSpent);
-	*s += "</TotalArgentSpent>\n";
+	*s += "</SpendedAmountOfArgent>\n";
 
 	// Total amount of argent spent for tower
-	*s += "\t<TotalArgentSpentForTurrets>";
+	*s += "\t\t<SpendedAmountOfArgentForTurrets>";
 	//*s += FString::FromInt(totalArgentSpentForTurrets);
 	*s += std::to_string(totalArgentSpentForTurrets);
-	*s += "</TotalArgentSpentForTurrets>\n";
+	*s += "</SpendedAmountOfArgentForTurrets>\n";
 
 	// --- Create and Upgrade --- //
 	// Total amount of how many weapons were upgraded
-	*s += "\t<TotalAmountWeaponUpgrade>";
+	*s += "\t\t<AmountOfWeaponUpgrades>";
 	//*s += FString::FromInt(totalAmountWeaponUpgrade);
 	*s += std::to_string(totalAmountWeaponUpgrade);
-	*s += "</TotalAmountWeaponUpgrade>\n";
+	*s += "</AmountOfWeaponUpgrades>\n";
 
 	// Total amount of how many turrets were placed
-	*s += "\t<TotalAmountTurretsPlaced>";
+	*s += "\t\t<AmountOfTurretsPlaced>";
 	//*s += FString::FromInt(totalAmountTurretsPlaced);
 	*s += std::to_string(totalAmountTurretsPlaced);
-	*s += "</TotalAmountTurretsPlaced>\n";
+	*s += "</AmountOfTurretsPlaced>\n";
 
 	// Total amount of how many turret upgrades were purchased
-	*s += "\t<TotalAmountTurretsUpgraded>";
+	*s += "\t\t<AmountOfTurretUpgrades>";
 	//*s += FString::FromInt(totalAmountTurretsUpgraded);
 	*s += std::to_string(totalAmountTurretsUpgraded);
-	*s += "</TotalAmountTurretsUpgraded>\n";
+	*s += "</AmountOfTurretUpgrades>\n";
 
 	// --- Weapon playtime --- //
 	// Total amount of how long player used Pistol
-	*s += "\t<TotalPlayTimePistol>";
+	*s += "\t\t<TotalPlayTimePistol>";
 	//*s += FString::SanitizeFloat(totalPlayTimePistol);
 	*s += std::to_string(totalPlayTimePistol);
 	*s += "</TotalPlayTimePistol>\n";
 
 	// Total amount of how long player used minigun
-	*s += "\t<TotalPlayTimeMinigun>";
+	*s += "\t\t<TotalPlayTimeMinigun>";
 	//*s += FString::SanitizeFloat(totalPlayTimeMinigun);
 	*s += std::to_string(totalPlayTimeMinigun);
 	*s += "</TotalPlayTimeMinigun>\n";
 
 	// Total amount of how long player used Harpune
-	*s += "\t<TotalPlayTimeHarpune>";
+	*s += "\t\t<TotalPlayTimeHarpune>";
 	//*s += FString::SanitizeFloat(totalPlayTimeHarpune);
 	*s += std::to_string(totalPlayTimeHarpune);
 	*s += "</TotalPlayTimeHarpune>\n";
 
 	// Total amount of how long player used Harpune
-	*s += "\t<TotalPlayTimeSniper>";
+	*s += "\t\t<TotalPlayTimeSniper>";
 	//*s += FString::SanitizeFloat(totalPlayTimeSniper);
 	*s += std::to_string(totalPlayTimeSniper);
 	*s += "</TotalPlayTimeSniper>\n";
 
 	// Total amount of how long player used Harpune
-	*s += "\t<TotalPlayTimeLMG>";
+	*s += "\t\t<TotalPlayTimeLMG>";
 	//*s += FString::SanitizeFloat(totalPlayTimeLMG);
 	*s += std::to_string(totalPlayTimeLMG);
 	*s += "</TotalPlayTimeLMG>\n";
 
 	// Total amount of how long player used Shotgun
-	*s += "\t<TotalPlayTimeShotgun>";
+	*s += "\t\t<TotalPlayTimeShotgun>";
 	//*s += FString::SanitizeFloat(totalPlayTimeShotgun);
 	*s += std::to_string(totalPlayTimeShotgun);
 	*s += "</TotalPlayTimeShotgun>\n";
 
 	// --- Distance --- //
 	// Total amount of how long player used Shotgun
-	*s += "\t<TotalDistanceWalked>";
+	*s += "\t\t<DistancePlayer>";
 	//*s += FString::SanitizeFloat(totalDistanceWalked);
 	*s += std::to_string(totalDistanceWalked);
-	*s += "</TotalDistanceWalked>\n";
+	*s += "</DistancePlayer>\n";
 #pragma endregion
 
 	// End of File
-	* s += "</XmlFiles>";
+	* s += "\t</Round>";
+	*s += "</ArrayOfRound>";
+#pragma endregion
 
-#pragma region Save to File (temporary)
-	//TEMPORARY: Save to File
-	//const char* temp = "{FilePath}";
-	//
-	//std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
-	//*ofs << *s;
-	//ofs->close();
-	//delete ofs;
+#pragma region Save to File
+
+#pragma region Filename Setup
+	/////////////////////////////////////////////
+	/// IMPORTANT BEFORE CHANGING FILENAME!!! ///
+	/////////////////////////////////////////////
+	/// In Case you want to exit the filename, DO NOT USE ":"
+	/// egs: "DOOMination_2021.03.23#12-30-22.xml" will save.
+	///		 "DOOMination_2021.03.23#12:30:22.xml" won't save.
+	
+	// set up file name
+	std::string* filename = new std::string();
+	// signature
+	*filename += "DOOMination_";
+	// year
+	*filename += std::to_string(timeNow.GetYear()) + ".";
+	// month
+	*filename += AddZero(timeNow.GetMonth(), 2) + ".";
+	// day
+	*filename += AddZero(timeNow.GetDay(), 2);
+	// hour
+	*filename += "#" + AddZero(timeNow.GetHour(), 2) + "-";
+	// minute
+	*filename += AddZero(timeNow.GetMinute(), 2) + "-";
+	// second
+	*filename += AddZero(timeNow.GetSecond(), 2);
+#pragma endregion
+
+	std::string tempPath = GetSaveDirectory() + *filename + ".xml";
+	const char* temp = tempPath.c_str();
+	
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Orange, temp);
+
+	// open Filestream and save content to file
+	std::ofstream* ofs = new std::ofstream(temp, std::ofstream::trunc);
+	*ofs << *s;
+	ofs->close();
+	delete ofs;
+	delete filename;
+
 #pragma endregion
 
 	delete s;
 }
 
+std::string ABDataCollector::AddZero(int number, int maxLenght)
+{
+	std::string toReturn = "";
+	std::string temp = std::to_string(number);
+	int length = temp.length();
+	while (length < maxLenght)
+	{
+		toReturn += "0";
+		length++;
+	}
 
+	toReturn += std::to_string(number);
+	return toReturn;
 
+}
+
+std::string ABDataCollector::AddZero(float number, int maxLenght)
+{
+	std::string toReturn = "";
+	std::string temp = std::to_string(number);
+	int length = temp.length();
+	while (length < maxLenght)
+	{
+		toReturn += "0";
+		length++;
+	}
+
+	toReturn += std::to_string(number);
+
+	return toReturn;
+
+}
+
+std::string ABDataCollector::GetSaveDirectory()
+{
+	// get user document path and add DOOMination directory
+	FString path = FPaths::ConvertRelativePathToFull(FPlatformProcess::UserDir());
+	path += "DOOMination/";
+
+	// check if folder exists. If not, create it
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	if (!PlatformFile.DirectoryExists(*path)) {
+		PlatformFile.CreateDirectory(*path);
+	}
+
+	// because the path is a FString and ofstream works with std::string, we need to convert it.
+	std::string path2 = std::string(TCHAR_TO_UTF8(*path));
+	return path2;
+}
