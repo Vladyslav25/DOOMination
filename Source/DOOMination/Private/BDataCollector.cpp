@@ -236,13 +236,13 @@ void ABDataCollector::SaveXML(
 	/// IMPORTANT BEFORE CHANGING FILENAME!!! ///
 	/////////////////////////////////////////////
 	/// In Case you want to exit the filename, DO NOT USE ":"
-	/// egs: "DOOMination_2021.03.23#12-30-22.xml" will save.
-	///		 "DOOMination_2021.03.23#12:30:22.xml" won't save.
+	/// egs: "MDF_2021.03.23#12-30-22.xml" will save.
+	///		 "MDF_2021.03.23#12:30:22.xml" won't save.
 	
 	// set up file name
 	std::string* filename = new std::string();
 	// signature
-	*filename += "DOOMination_";
+	*filename += "MDF_";
 	// year
 	*filename += std::to_string(timeNow.GetYear()) + ".";
 	// month
@@ -309,9 +309,9 @@ std::string ABDataCollector::AddZero(float number, int maxLenght)
 
 std::string ABDataCollector::GetSaveDirectory()
 {
-	// get user document path and add DOOMination directory
+	// get user document path and add MDF directory
 	FString path = FPaths::ConvertRelativePathToFull(FPlatformProcess::UserDir());
-	path += "DOOMination/";
+	path += "MDF/";
 
 	// check if folder exists. If not, create it
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();

@@ -27,7 +27,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "XML")
 		/// <summary>
-		/// Save collected Data to a xml file located in "My Documents/DOOMination/[current Date/Time].xml"
+		/// Save collected Data to a xml file located in "My Documents/MDF/[current Date/Time].xml"
 		/// </summary>
 		void SaveXML(int waveAmount, float totalAmountDmgByPlayer, float totalAmountDmgByTurret, int totalTowerShots, int totalPlayerShots, int totalPlayerShotsHit, int totalPlayerShotsCrit, int totalArgentCollected, int totalArgentSpend, int totalArgentSpendForTurrets, int totalAmountWeaponUpgrade, int totalAmountTurretsPlaced, int totalAmountTurretsUpgraded, float totalPlayTimePistol, float totalPlayTimeMinigun, float totalPlayTimeHarpune, float totalPlayTimeSniper, float totalPlayTimeLMG, float totalPlayTimeShotgun, float totalDistanceWalked);
 
